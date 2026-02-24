@@ -45,7 +45,9 @@ const SFnest = () => {
         <header style={homeStyles.header}>
           <h1>SafeSupport</h1>
           <p>Gender-Responsive Support Against Domestic Violence</p>
-          <button onClick={quickExit} style={homeStyles.exitBtn}>⚠️ Quick Exit</button>
+          <button onClick={quickExit} style={homeStyles.exitBtn}>
+            ⚠️ Quick Exit
+          </button>
         </header>
 
         <section style={homeStyles.hero}>
@@ -55,7 +57,9 @@ const SFnest = () => {
             counselling for individuals facing domestic violence — regardless of
             gender.
           </p>
-          <button style={homeStyles.sosButton} onClick={callEmergency}>🚨 Emergency Help</button>
+          <button style={homeStyles.sosButton} onClick={callEmergency}>
+            🚨 Emergency Help
+          </button>
         </section>
 
         <section style={homeStyles.services}>
@@ -78,7 +82,8 @@ const SFnest = () => {
           <div style={homeStyles.card}>
             <h3>Health & Safety</h3>
             <p>
-              Get guidance on health risks, trauma recovery, and safety planning.
+              Get guidance on health risks, trauma recovery, and safety
+              planning.
             </p>
           </div>
         </section>
@@ -88,7 +93,12 @@ const SFnest = () => {
           <p>
             Confidential. Secure. Gender-inclusive. Your safety comes first.
           </p>
-          <button style={homeStyles.ctaButton} onClick={() => setCurrentView("landing")}>Get Started</button>
+          <button
+            style={homeStyles.ctaButton}
+            onClick={() => setCurrentView("landing")}
+          >
+            Get Started
+          </button>
         </section>
 
         <footer style={homeStyles.footer}>
@@ -210,7 +220,10 @@ const SFnest = () => {
           <p>Legal protection and support resources available for survivors.</p>
         </div>
 
-        <button onClick={() => setCurrentView("home")} style={styles.backButton}>
+        <button
+          onClick={() => setCurrentView("home")}
+          style={styles.backButton}
+        >
           Back to Home
         </button>
       </div>
@@ -234,8 +247,8 @@ const homeStyles = {
   },
   exitBtn: {
     position: "absolute",
-    inset-block-start: "20px",
-    inset-inline-end: "20px",
+    top: "20px",
+    right: "20px",
     padding: "10px 20px",
     backgroundColor: "#dc3545",
     color: "#fff",
@@ -253,7 +266,7 @@ const homeStyles = {
     background: "linear-gradient(to bottom, #f8f9fa, #e9ecef)",
   },
   sosButton: {
-    margininset-block-start: "30px",
+    marginTop: "30px",
     padding: "15px 40px",
     backgroundColor: "#dc3545",
     color: "#fff",
@@ -274,13 +287,13 @@ const homeStyles = {
     backgroundColor: "#fff",
   },
   card: {
-    inline-size: "30%",
-    mininline-size: "280px",
+    width: "30%",
+    minWidth: "280px",
     padding: "30px",
     boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
     borderRadius: "12px",
     textAlign: "center",
-    margininset-block-end: "20px",
+    marginBottom: "20px",
     transition: "transform 0.3s ease, box-shadow 0.3s ease",
     backgroundColor: "#fff",
     border: "1px solid #e9ecef",
@@ -300,7 +313,7 @@ const homeStyles = {
     borderRadius: "50px",
     fontSize: "18px",
     fontWeight: "700",
-    margininset-block-start: "20px",
+    marginTop: "20px",
     boxShadow: "0 8px 15px rgba(0,0,0,0.2)",
     transition: "all 0.3s ease",
   },
@@ -315,8 +328,8 @@ const homeStyles = {
 
 const styles = {
   form: {
-    inline-size: "400px",
-    maxinline-size: "90%",
+    width: "400px",
+    maxWidth: "90%",
     padding: "40px",
     backgroundColor: "#fff",
     borderRadius: "16px",
@@ -324,7 +337,7 @@ const styles = {
     textAlign: "center",
   },
   input: {
-    inline-size: "100%",
+    width: "100%",
     padding: "14px",
     margin: "10px 0",
     borderRadius: "8px",
@@ -334,7 +347,7 @@ const styles = {
     boxSizing: "border-box",
   },
   select: {
-    inline-size: "100%",
+    width: "100%",
     padding: "14px",
     margin: "10px 0",
     borderRadius: "8px",
@@ -345,13 +358,13 @@ const styles = {
     boxSizing: "border-box",
   },
   button: {
-    inline-size: "100%",
+    width: "100%",
     padding: "14px",
     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     color: "#fff",
     border: "none",
     cursor: "pointer",
-    margininset-block-start: "15px",
+    marginTop: "15px",
     borderRadius: "8px",
     fontWeight: "700",
     fontSize: "16px",
@@ -359,25 +372,25 @@ const styles = {
     boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
   },
   toggleText: {
-    margininset-block-start: "20px",
+    marginTop: "20px",
     fontSize: "14px",
     color: "#6c757d",
   },
   toggleLink: {
     color: "#667eea",
     cursor: "pointer",
-    margininset-inline-start: "5px",
+    marginLeft: "5px",
     fontWeight: "700",
     textDecoration: "underline",
   },
   backButton: {
-    inline-size: "100%",
+    width: "100%",
     padding: "12px",
     backgroundColor: "#6c757d",
     color: "#fff",
     border: "none",
     cursor: "pointer",
-    margininset-block-start: "15px",
+    marginTop: "15px",
     borderRadius: "8px",
     fontWeight: "600",
     transition: "background 0.3s ease",

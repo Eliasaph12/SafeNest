@@ -273,8 +273,8 @@ const SecureApp = () => {
             <div className="sidebar-item">📊 Dashboard</div>
             {userRole === "Victim" && (
               <>
-                <div style={styles.sidebarItem}>🆘 Get Help</div>
-                <div style={styles.sidebarItem}>📚 Resources</div>
+                <div className="sidebar-item">🆘 Get Help</div>
+                <div className="sidebar-item">📚 Resources</div>
                 <div className="sidebar-item">💬 Chat Support</div>
                 <div className="sidebar-item">⚖️ Legal Info</div>
               </>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const logPage = () => {
+const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
@@ -142,4 +142,4 @@ const styles = {
   },
 };
 
-export default logPage;
+export default LoginPage;
