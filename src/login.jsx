@@ -98,14 +98,15 @@ const LoginPage = () => {
 
 const styles = {
   container: {
-    minHeight: "100vh",
+    blockSize: "100vh",
+    minBlockSize: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f4f6f8",
   },
   form: {
-    width: "350px",
+    inlineSize: "350px",
     padding: "25px",
     backgroundColor: "#fff",
     borderRadius: "8px",
@@ -113,32 +114,32 @@ const styles = {
     textAlign: "center",
   },
   input: {
-    width: "100%",
+    inlineSize: "100%",
     padding: "10px",
     margin: "8px 0",
   },
   select: {
-    width: "100%",
+    inlineSize: "100%",
     padding: "10px",
     margin: "10px 0",
   },
   button: {
-    width: "100%",
+    inlineSize: "100%",
     padding: "10px",
     backgroundColor: "#2c7be5",
     color: "#fff",
     border: "none",
     cursor: "pointer",
-    marginTop: "10px",
+    marginBlockStart: "10px",
   },
   toggleText: {
-    marginTop: "15px",
+    marginBlockStart: "15px",
     fontSize: "14px",
   },
   toggleLink: {
     color: "#2c7be5",
     cursor: "pointer",
-    marginLeft: "5px",
+    marginInlineStart: "5px",
   },
 };
 
