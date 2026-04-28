@@ -31,10 +31,9 @@ SafeNest is a comprehensive web application designed to provide immediate suppor
 - **Axios/Fetch API** - HTTP client for backend communication
 
 ### Backend
-- **Spring Boot 3.5.1** - Java framework for REST API development
-- **Java 21** - Latest LTS Java version with modern features
+- **Node.js (Express)** - Fast, unopinionated web framework
 - **MySQL 8.0** - Relational database for data persistence
-- **Maven** - Dependency management and build automation
+- **npm** - Package management
 
 ### Security
 - **BCrypt** - Password hashing and verification
@@ -47,9 +46,7 @@ SafeNest is a comprehensive web application designed to provide immediate suppor
 Before running SafeNest, ensure you have the following installed:
 
 - **Node.js** 18+ (for frontend development)
-- **Java** 21+ (for backend development)
 - **MySQL** 8.0+ (database server)
-- **Maven** 3.9+ (Java build tool)
 - **Git** (version control)
 
 ## 🚀 Quick Start
@@ -76,10 +73,10 @@ FLUSH PRIVILEGES;
 
 ```bash
 # Navigate to backend directory
-cd Project_backend/backend
+cd SafeNest-backend
 
-# Configure environment (copy and edit)
-cp src/main/resources/application.properties.example src/main/resources/application.properties
+# Configure environment
+cp .env.example .env
 
 # Edit application.properties with your database credentials
 # Or set environment variables (recommended for production)
@@ -102,8 +99,6 @@ cp .env.example .env
 ```bash
 # Frontend dependencies
 npm install
-
-# Backend dependencies (automatically handled by Maven)
 ```
 
 ### 6. Start the Application
@@ -112,8 +107,8 @@ npm install
 
 ```bash
 # Terminal 1: Start Backend
-cd Project_backend/backend
-mvn spring-boot:run
+cd SafeNest-backend
+npm start
 
 # Terminal 2: Start Frontend
 npm run dev

@@ -1,168 +1,211 @@
-import { useEffect, useRef } from "react";
 import { useTheme } from "./ThemeContext";
 
-const themes = {
+const pageThemes = {
   home: {
-    particles: [
-      { emoji: "🛡️", size: 28 }, { emoji: "🌐", size: 24 }, { emoji: "🔐", size: 22 },
-      { emoji: "⚡", size: 20 }, { emoji: "🛰️", size: 26 }, { emoji: "💡", size: 18 },
-      { emoji: "🔭", size: 30 }, { emoji: "🌍", size: 24 }, { emoji: "⚙️", size: 22 },
-      { emoji: "🛡️", size: 20 }, { emoji: "💫", size: 16 }, { emoji: "🌐", size: 28 },
-    ],
-    light: "linear-gradient(135deg, #f0f4ff 0%, #e8eeff 50%, #f0f9ff 100%)",
-    dark:  "linear-gradient(135deg, #0a0e1a 0%, #0d1224 50%, #080d1a 100%)",
+    light: {
+      base: "linear-gradient(180deg, #f7faff 0%, #eef5ff 42%, #f7fbff 100%)",
+      surface: "rgba(255, 255, 255, 0.72)",
+      accent: "rgba(108, 99, 255, 0.18)",
+      accentSoft: "rgba(56, 189, 248, 0.16)",
+      glow: "rgba(251, 191, 36, 0.08)",
+      beam: "rgba(108, 99, 255, 0.14)",
+      line: "rgba(148, 163, 184, 0.14)",
+      ring: "rgba(108, 99, 255, 0.18)",
+      vignette: "rgba(255, 255, 255, 0.34)",
+    },
+    dark: {
+      base: "linear-gradient(180deg, #08101f 0%, #0d1730 42%, #10192a 100%)",
+      surface: "rgba(15, 23, 42, 0.54)",
+      accent: "rgba(129, 140, 248, 0.26)",
+      accentSoft: "rgba(56, 189, 248, 0.2)",
+      glow: "rgba(244, 114, 182, 0.1)",
+      beam: "rgba(129, 140, 248, 0.16)",
+      line: "rgba(148, 163, 184, 0.08)",
+      ring: "rgba(129, 140, 248, 0.18)",
+      vignette: "rgba(2, 6, 23, 0.42)",
+    },
   },
   login: {
-    particles: [
-      { emoji: "🔐", size: 24 }, { emoji: "🛡️", size: 28 }, { emoji: "🔑", size: 22 },
-      { emoji: "💫", size: 18 }, { emoji: "🧬", size: 26 }, { emoji: "⚡", size: 20 },
-      { emoji: "🌐", size: 24 }, { emoji: "💡", size: 16 }, { emoji: "🔐", size: 22 },
-    ],
-    light: "linear-gradient(135deg, #ede9ff 0%, #ddd6fe 50%, #c4b5fd 100%)",
-    dark:  "linear-gradient(135deg, #0d0b1e 0%, #130f2e 50%, #0a0818 100%)",
+    light: {
+      base: "linear-gradient(180deg, #f8f7ff 0%, #f2f2ff 48%, #f4f8ff 100%)",
+      surface: "rgba(255, 255, 255, 0.76)",
+      accent: "rgba(108, 99, 255, 0.18)",
+      accentSoft: "rgba(96, 165, 250, 0.14)",
+      glow: "rgba(167, 139, 250, 0.12)",
+      beam: "rgba(108, 99, 255, 0.16)",
+      line: "rgba(148, 163, 184, 0.12)",
+      ring: "rgba(108, 99, 255, 0.16)",
+      vignette: "rgba(255, 255, 255, 0.32)",
+    },
+    dark: {
+      base: "linear-gradient(180deg, #0a1124 0%, #111938 48%, #111827 100%)",
+      surface: "rgba(15, 23, 42, 0.56)",
+      accent: "rgba(129, 140, 248, 0.28)",
+      accentSoft: "rgba(96, 165, 250, 0.18)",
+      glow: "rgba(192, 132, 252, 0.1)",
+      beam: "rgba(129, 140, 248, 0.18)",
+      line: "rgba(148, 163, 184, 0.08)",
+      ring: "rgba(129, 140, 248, 0.18)",
+      vignette: "rgba(2, 6, 23, 0.44)",
+    },
   },
   register: {
-    particles: [
-      { emoji: "🌱", size: 24 }, { emoji: "🛡️", size: 28 }, { emoji: "🌐", size: 22 },
-      { emoji: "💫", size: 18 }, { emoji: "⚡", size: 26 }, { emoji: "🔭", size: 20 },
-      { emoji: "🧬", size: 24 }, { emoji: "💡", size: 16 }, { emoji: "🌱", size: 22 },
-    ],
-    light: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%)",
-    dark:  "linear-gradient(135deg, #071a0e 0%, #0a2414 50%, #051208 100%)",
+    light: {
+      base: "linear-gradient(180deg, #f6fcfb 0%, #effbf6 48%, #f4f8ff 100%)",
+      surface: "rgba(255, 255, 255, 0.76)",
+      accent: "rgba(16, 185, 129, 0.16)",
+      accentSoft: "rgba(45, 212, 191, 0.16)",
+      glow: "rgba(56, 189, 248, 0.08)",
+      beam: "rgba(16, 185, 129, 0.14)",
+      line: "rgba(148, 163, 184, 0.12)",
+      ring: "rgba(16, 185, 129, 0.16)",
+      vignette: "rgba(255, 255, 255, 0.3)",
+    },
+    dark: {
+      base: "linear-gradient(180deg, #071816 0%, #0c211f 48%, #0f1b2c 100%)",
+      surface: "rgba(15, 23, 42, 0.54)",
+      accent: "rgba(16, 185, 129, 0.22)",
+      accentSoft: "rgba(45, 212, 191, 0.16)",
+      glow: "rgba(56, 189, 248, 0.08)",
+      beam: "rgba(16, 185, 129, 0.14)",
+      line: "rgba(148, 163, 184, 0.08)",
+      ring: "rgba(16, 185, 129, 0.18)",
+      vignette: "rgba(2, 6, 23, 0.44)",
+    },
   },
   dashboard_Victim: {
-    particles: [
-      { emoji: "🛡️", size: 24 }, { emoji: "🕊️", size: 22 }, { emoji: "🌐", size: 20 },
-      { emoji: "💫", size: 16 }, { emoji: "⚡", size: 24 }, { emoji: "🔐", size: 18 },
-      { emoji: "🌍", size: 22 }, { emoji: "💡", size: 14 }, { emoji: "🛡️", size: 26 },
-    ],
-    light: "linear-gradient(135deg, #fdf4ff 0%, #fce7f3 50%, #ffe4e6 100%)",
-    dark:  "linear-gradient(135deg, #1a0a1e 0%, #200d24 50%, #180810 100%)",
+    light: {
+      base: "linear-gradient(180deg, #fff9fb 0%, #fff6f8 44%, #f7f9ff 100%)",
+      surface: "rgba(255, 255, 255, 0.76)",
+      accent: "rgba(244, 114, 182, 0.14)",
+      accentSoft: "rgba(108, 99, 255, 0.12)",
+      glow: "rgba(251, 113, 133, 0.08)",
+      beam: "rgba(244, 114, 182, 0.12)",
+      line: "rgba(148, 163, 184, 0.12)",
+      ring: "rgba(244, 114, 182, 0.16)",
+      vignette: "rgba(255, 255, 255, 0.3)",
+    },
+    dark: {
+      base: "linear-gradient(180deg, #1a1021 0%, #231226 44%, #10192d 100%)",
+      surface: "rgba(15, 23, 42, 0.54)",
+      accent: "rgba(244, 114, 182, 0.18)",
+      accentSoft: "rgba(129, 140, 248, 0.14)",
+      glow: "rgba(251, 113, 133, 0.08)",
+      beam: "rgba(244, 114, 182, 0.14)",
+      line: "rgba(148, 163, 184, 0.08)",
+      ring: "rgba(244, 114, 182, 0.16)",
+      vignette: "rgba(2, 6, 23, 0.46)",
+    },
   },
   dashboard_Counsellor: {
-    particles: [
-      { emoji: "🧠", size: 24 }, { emoji: "💡", size: 22 }, { emoji: "🌐", size: 20 },
-      { emoji: "💫", size: 16 }, { emoji: "⚡", size: 22 }, { emoji: "🔭", size: 18 },
-      { emoji: "🧬", size: 24 }, { emoji: "🛡️", size: 14 }, { emoji: "🧠", size: 26 },
-    ],
-    light: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #d1fae5 100%)",
-    dark:  "linear-gradient(135deg, #071a0e 0%, #0b2416 50%, #051410 100%)",
+    light: {
+      base: "linear-gradient(180deg, #f7fffc 0%, #eefcf8 44%, #f4fbff 100%)",
+      surface: "rgba(255, 255, 255, 0.76)",
+      accent: "rgba(45, 212, 191, 0.14)",
+      accentSoft: "rgba(56, 189, 248, 0.12)",
+      glow: "rgba(74, 222, 128, 0.08)",
+      beam: "rgba(45, 212, 191, 0.12)",
+      line: "rgba(148, 163, 184, 0.12)",
+      ring: "rgba(45, 212, 191, 0.16)",
+      vignette: "rgba(255, 255, 255, 0.3)",
+    },
+    dark: {
+      base: "linear-gradient(180deg, #081916 0%, #0b2222 44%, #0e1d29 100%)",
+      surface: "rgba(15, 23, 42, 0.54)",
+      accent: "rgba(45, 212, 191, 0.16)",
+      accentSoft: "rgba(56, 189, 248, 0.14)",
+      glow: "rgba(74, 222, 128, 0.08)",
+      beam: "rgba(45, 212, 191, 0.14)",
+      line: "rgba(148, 163, 184, 0.08)",
+      ring: "rgba(45, 212, 191, 0.18)",
+      vignette: "rgba(2, 6, 23, 0.44)",
+    },
   },
   dashboard_LegalAdvisor: {
-    particles: [
-      { emoji: "⚖️", size: 24 }, { emoji: "🏛️", size: 22 }, { emoji: "🔍", size: 20 },
-      { emoji: "💫", size: 16 }, { emoji: "📡", size: 22 }, { emoji: "🛡️", size: 18 },
-      { emoji: "⚡", size: 24 }, { emoji: "🌐", size: 14 }, { emoji: "⚖️", size: 26 },
-    ],
-    light: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #bfdbfe 100%)",
-    dark:  "linear-gradient(135deg, #070d1a 0%, #0a1224 50%, #05091a 100%)",
+    light: {
+      base: "linear-gradient(180deg, #f7fbff 0%, #eef6ff 44%, #f5f8ff 100%)",
+      surface: "rgba(255, 255, 255, 0.76)",
+      accent: "rgba(96, 165, 250, 0.16)",
+      accentSoft: "rgba(108, 99, 255, 0.1)",
+      glow: "rgba(59, 130, 246, 0.08)",
+      beam: "rgba(96, 165, 250, 0.14)",
+      line: "rgba(148, 163, 184, 0.12)",
+      ring: "rgba(96, 165, 250, 0.16)",
+      vignette: "rgba(255, 255, 255, 0.3)",
+    },
+    dark: {
+      base: "linear-gradient(180deg, #08121f 0%, #0d1830 44%, #10192b 100%)",
+      surface: "rgba(15, 23, 42, 0.54)",
+      accent: "rgba(96, 165, 250, 0.18)",
+      accentSoft: "rgba(129, 140, 248, 0.12)",
+      glow: "rgba(59, 130, 246, 0.08)",
+      beam: "rgba(96, 165, 250, 0.14)",
+      line: "rgba(148, 163, 184, 0.08)",
+      ring: "rgba(96, 165, 250, 0.18)",
+      vignette: "rgba(2, 6, 23, 0.46)",
+    },
   },
   dashboard_Admin: {
-    particles: [
-      { emoji: "🔐", size: 24 }, { emoji: "⚙️", size: 22 }, { emoji: "📡", size: 20 },
-      { emoji: "💫", size: 16 }, { emoji: "🛰️", size: 22 }, { emoji: "🔭", size: 18 },
-      { emoji: "⚡", size: 24 }, { emoji: "🌐", size: 14 }, { emoji: "🔐", size: 26 },
-    ],
-    light: "linear-gradient(135deg, #faf5ff 0%, #ede9fe 50%, #ddd6fe 100%)",
-    dark:  "linear-gradient(135deg, #0d0b1e 0%, #150f2e 50%, #0a0820 100%)",
+    light: {
+      base: "linear-gradient(180deg, #fbf9ff 0%, #f6f1ff 44%, #f4f8ff 100%)",
+      surface: "rgba(255, 255, 255, 0.76)",
+      accent: "rgba(167, 139, 250, 0.16)",
+      accentSoft: "rgba(96, 165, 250, 0.1)",
+      glow: "rgba(129, 140, 248, 0.08)",
+      beam: "rgba(167, 139, 250, 0.14)",
+      line: "rgba(148, 163, 184, 0.12)",
+      ring: "rgba(167, 139, 250, 0.16)",
+      vignette: "rgba(255, 255, 255, 0.3)",
+    },
+    dark: {
+      base: "linear-gradient(180deg, #120d24 0%, #191433 44%, #10192b 100%)",
+      surface: "rgba(15, 23, 42, 0.54)",
+      accent: "rgba(167, 139, 250, 0.2)",
+      accentSoft: "rgba(96, 165, 250, 0.1)",
+      glow: "rgba(129, 140, 248, 0.08)",
+      beam: "rgba(167, 139, 250, 0.16)",
+      line: "rgba(148, 163, 184, 0.08)",
+      ring: "rgba(167, 139, 250, 0.18)",
+      vignette: "rgba(2, 6, 23, 0.46)",
+    },
   },
 };
 
 const LiveBackground = ({ page, userRole }) => {
   const { isDark } = useTheme();
-  const canvasRef = useRef(null);
   const themeKey = page === "dashboard" ? `dashboard_${userRole}` : page;
-  const theme = themes[themeKey] || themes.home;
-  const gradient = isDark ? theme.dark : theme.light;
-
-  // dark mode: brighter opacity so particles glow on dark bg
-  const baseOpacity = isDark ? 0.45 : 0.25;
-  const opacityRange = isDark ? 0.3 : 0.25;
-  const pulseRange = isDark ? 0.12 : 0.08;
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    let animId;
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const particles = theme.particles.map((p) => ({
-      ...p,
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      opacity: baseOpacity + Math.random() * opacityRange,
-      phase: Math.random() * Math.PI * 2,
-    }));
-
-    const draw = (time) => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // dark mode: draw subtle radial glow overlay
-      if (isDark) {
-        const grd = ctx.createRadialGradient(
-          canvas.width / 2, canvas.height / 2, 0,
-          canvas.width / 2, canvas.height / 2, canvas.width * 0.7
-        );
-        grd.addColorStop(0, "rgba(129,140,248,0.04)");
-        grd.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = grd;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < -50) p.x = canvas.width + 50;
-        if (p.x > canvas.width + 50) p.x = -50;
-        if (p.y < -50) p.y = canvas.height + 50;
-        if (p.y > canvas.height + 50) p.y = -50;
-
-        const floatY = Math.sin(time * 0.001 + p.phase) * 6;
-        ctx.save();
-        ctx.globalAlpha = p.opacity + Math.sin(time * 0.002 + p.phase) * pulseRange;
-
-        // dark mode: add glow shadow behind particles
-        if (isDark) {
-          ctx.shadowColor = "rgba(129,140,248,0.6)";
-          ctx.shadowBlur = 12;
-        }
-
-        ctx.font = `${p.size * 1.5}px serif`;
-        ctx.textAlign = "center";
-        ctx.fillText(p.emoji, p.x, p.y + floatY);
-        ctx.restore();
-      });
-
-      animId = requestAnimationFrame(draw);
-    };
-
-    animId = requestAnimationFrame(draw);
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
-    };
-  }, [themeKey, isDark]);
+  const theme = pageThemes[themeKey] || pageThemes.home;
+  const palette = isDark ? theme.dark : theme.light;
 
   return (
-    <>
-      <div style={{
-        position: "fixed", inset: 0, zIndex: -2,
-        background: gradient,
-        transition: "background 0.8s ease",
-      }} />
-      <canvas ref={canvasRef} style={{
-        position: "fixed", inset: 0, zIndex: -1,
-        pointerEvents: "none",
-      }} />
-    </>
+    <div
+      aria-hidden="true"
+      className="live-bg"
+      style={{
+        "--live-base": palette.base,
+        "--live-surface": palette.surface,
+        "--live-accent": palette.accent,
+        "--live-accent-soft": palette.accentSoft,
+        "--live-glow": palette.glow,
+        "--live-beam": palette.beam,
+        "--live-line": palette.line,
+        "--live-ring": palette.ring,
+        "--live-vignette": palette.vignette,
+      }}
+    >
+      <div className="live-bg-grid" />
+      <div className="live-bg-noise" />
+      <div className="live-bg-spotlight" />
+      <div className="live-bg-beam beam-left" />
+      <div className="live-bg-beam beam-right" />
+      <div className="live-bg-orb orb-primary" />
+      <div className="live-bg-orb orb-secondary" />
+      <div className="live-bg-orb orb-tertiary" />
+      <div className="live-bg-ring ring-left" />
+      <div className="live-bg-ring ring-right" />
+      <div className="live-bg-sheen" />
+      <div className="live-bg-vignette" />
+    </div>
   );
 };
 

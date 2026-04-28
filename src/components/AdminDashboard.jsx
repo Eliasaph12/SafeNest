@@ -1,221 +1,273 @@
 import { useState, useEffect } from "react";
 import "../secure.css";
-import { apiService } from "../services/apiService";
+import { apiService } from "../services/apiService.js";
+import AgentSupportChat from "./AgentSupportChat";
 
-const logs = [
-  { time: "09:12 AM", event: "User login — Counsellor", level: "info" },
-  { time: "09:45 AM", event: "New case created — Protection Order", level: "info" },
-  { time: "10:30 AM", event: "Failed login attempt", level: "warning" },
-  { time: "11:00 AM", event: "User role updated — Admin", level: "info" },
-  { time: "11:45 AM", event: "Unauthorized access attempt blocked", level: "danger" },
-];
-
-const AdminDashboard = ({ activeTab, setActiveTab }) => {
+const AdminDashboard = ({ activeTab, setActiveTab, user }) => {
+  const ACTIVITY_POLL_INTERVAL_MS = 5000;
   activeTab = activeTab || "overview";
   setActiveTab = setActiveTab || (() => {});
-  const [resources, setResources] = useState([]);
+
+  const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState({});
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [search, setSearch] = useState("");
-  const [newResource, setNewResource] = useState({
-    name: "",
-    description: "",
-    resourceType: "SafetyTip",
-    targetAudience: "Victim",
-    contactInfo: "",
-    emergencyHotline: "",
-    priorityLevel: 1,
-    imageUrl: ""
-  });
-  const [resourceSaved, setResourceSaved] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    if (activeTab === "users" || activeTab === "overview") {
-      fetchResources();
+    if (activeTab === "support") {
+      return;
     }
+    loadData();
   }, [activeTab]);
 
-  const fetchResources = async () => {
-    setLoading(true);
-    setError(null);
+  const loadData = async () => {
     try {
-      const data = await apiService.getAllResources();
-      setResources(data);
+      setLoading(true);
+      setError(null);
+      const [usersData, statsData, activityData] = await Promise.all([
+        apiService.getAllUsers(),
+        apiService.getSystemStats(),
+        apiService.getRecentActivities(),
+      ]);
+      setUsers(usersData);
+      setStats(statsData);
+      setActivities(Array.isArray(activityData) ? activityData : []);
     } catch (err) {
-      setError("Failed to load resources: " + err.message);
-      console.error("Error fetching resources:", err);
+      setError("Failed to load data: " + err.message);
+      setUsers([]);
+      setStats({});
+      setActivities([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const addResource = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  useEffect(() => {
+    if (activeTab === "support") {
+      return;
+    }
 
+    const refreshActivities = async () => {
+      try {
+        const activityData = await apiService.getRecentActivities();
+        setActivities(activityData || []);
+      } catch (err) {
+        setError((current) => current || "Failed to load activity feed: " + err.message);
+      }
+    };
+
+    const intervalId = window.setInterval(refreshActivities, ACTIVITY_POLL_INTERVAL_MS);
+    return () => window.clearInterval(intervalId);
+  }, [activeTab]);
+
+  const deleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await apiService.createResource(newResource);
-      setNewResource({
-        name: "",
-        description: "",
-        resourceType: "SafetyTip",
-        targetAudience: "Victim",
-        contactInfo: "",
-        emergencyHotline: "",
-        priorityLevel: 1,
-        imageUrl: ""
-      });
-      setResourceSaved(true);
-      setTimeout(() => setResourceSaved(false), 2000);
-      fetchResources(); // Refresh the list
+      await apiService.deleteUser(userId);
+      setSuccessMessage("User deleted successfully");
+      setTimeout(() => setSuccessMessage(""), 2000);
+      loadData();
     } catch (err) {
-      setError("Failed to create resource: " + err.message);
-    } finally {
-      setLoading(false);
+      setError("Failed to delete user: " + err.message);
     }
   };
 
-  const deleteResource = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this resource?")) return;
-
-    try {
-      await apiService.deleteResource(id);
-      fetchResources(); // Refresh the list
-    } catch (err) {
-      setError("Failed to delete resource: " + err.message);
-    }
-  };
-
-  const filtered = resources.filter(r =>
-    r.name?.toLowerCase().includes(search.toLowerCase()) ||
-    r.description?.toLowerCase().includes(search.toLowerCase()) ||
-    r.resourceType?.toLowerCase().includes(search.toLowerCase())
+  const filteredUsers = users.filter((userItem) =>
+    userItem.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    userItem.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    userItem.role?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const getRoleColor = (role) => {
+    const colors = {
+      Victim: "red",
+      Counsellor: "blue",
+      LegalAdvisor: "purple",
+      Admin: "green",
+    };
+    return colors[role] || "gray";
+  };
+
+  const getLogLevel = (actionType) => {
+    if (!actionType) {
+      return "blue";
+    }
+    if (actionType.includes("DELETED")) {
+      return "red";
+    }
+    if (actionType.includes("CLOSED")) {
+      return "yellow";
+    }
+    return "blue";
+  };
 
   return (
     <div>
       <div className="dash-welcome">
         <h1>Admin Dashboard</h1>
-        <p>Manage users, monitor security, and oversee platform activity.</p>
+        <p>Manage users, monitor system health, and oversee platform activity.</p>
       </div>
 
-      <div className="stats-grid">
-        <div className="stat-card"><div className="stat-num">{resources.length}</div><p>Total Resources</p></div>
-        <div className="stat-card"><div className="stat-num">{resources.filter(r => r.isActive).length}</div><p>Active Resources</p></div>
-        <div className="stat-card"><div className="stat-num">{resources.filter(r => r.resourceType === "SafetyTip").length}</div><p>Safety Tips</p></div>
-        <div className="stat-card"><div className="stat-num">{logs.filter(l => l.level === "danger" || l.level === "warning").length}</div><p>Security Alerts</p></div>
-      </div>
+      {activeTab !== "support" && (
+        <>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "40px" }}>Loading dashboard data...</div>
+          ) : (
+            <div className="stats-grid">
+              <div className="stat-card">
+                <div className="stat-num">{stats.totalUsers || 0}</div>
+                <p>Total Users</p>
+              </div>
+              <div className="stat-card">
+                <div className="stat-num">{stats.victimCount || 0}</div>
+                <p>Victims</p>
+              </div>
+              <div className="stat-card">
+                <div className="stat-num">{stats.counsellorCount || 0}</div>
+                <p>Counsellors</p>
+              </div>
+              <div className="stat-card">
+                <div className="stat-num">{stats.legalAdvisorCount || 0}</div>
+                <p>Legal Advisors</p>
+              </div>
+            </div>
+          )}
 
-      <div className="tab-bar">
-        {["overview", "users", "security", "settings"].map(tab => (
-          <button key={tab} className={`tab-btn ${activeTab === tab ? "active" : ""}`} onClick={() => setActiveTab(tab)}>
-            {tab === "overview" && "📊 Dashboard & Analytics"}
-            {tab === "users" && "📚 Resources"}
-            {tab === "security" && "🔒 Security"}
-            {tab === "settings" && "⚙️ Settings"}
-          </button>
-        ))}
-      </div>
+          <div className="tab-bar">
+            {["overview", "users", "support", "security", "settings"].map((tab) => (
+              <button key={tab} className={`tab-btn ${activeTab === tab ? "active" : ""}`} onClick={() => setActiveTab(tab)}>
+                {tab === "overview" && "Overview"}
+                {tab === "users" && "Users"}
+                {tab === "support" && "Support Inbox"}
+                {tab === "security" && "Security"}
+                {tab === "settings" && "Settings"}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
-      {activeTab === "overview" && (
-        <div className="dash-grid">
-          <div className="dash-card"><div className="dc-icon">📚</div><h3>Resource Management</h3><p>Manage safety resources, legal info, and support materials</p><button className="btn-card" onClick={() => setActiveTab("users")}>Manage Resources</button></div>
-          <div className="dash-card"><div className="dc-icon">🔒</div><h3>Security</h3><p>Monitor security logs and data protection</p><button className="btn-card" onClick={() => setActiveTab("security")}>View Logs</button></div>
-          <div className="dash-card"><div className="dc-icon">📊</div><h3>Analytics</h3><p>{resources.length} total resources, {resources.filter(r => r.isActive).length} active, {resources.filter(r => r.resourceType === "SafetyTip").length} safety tips</p><button className="btn-card">View Report</button></div>
-          <div className="dash-card"><div className="dc-icon">⚙️</div><h3>Settings</h3><p>Configure platform settings and preferences</p><button className="btn-card" onClick={() => setActiveTab("settings")}>Open Settings</button></div>
+      {error && <div style={{ color: "#e53e3e", backgroundColor: "#fed7d7", padding: "12px", borderRadius: "8px", marginBottom: "16px" }}>{error}</div>}
+      {successMessage && <div style={{ color: "#22543d", backgroundColor: "#c6f6d5", padding: "12px", borderRadius: "8px", marginBottom: "16px" }}>{successMessage}</div>}
+
+      {activeTab === "overview" && !loading && (
+        <div>
+          <div className="dash-card" style={{ marginBottom: "20px" }}>
+            <h3>System Overview</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginTop: "16px" }}>
+              <div style={{ padding: "12px", backgroundColor: "#edf2f7", borderRadius: "8px", borderLeft: "4px solid #2d3748" }}>
+                <p style={{ margin: 0, fontSize: "12px", color: "#718096", fontWeight: "600" }}>TOTAL USERS</p>
+                <p style={{ margin: "8px 0 0 0", fontSize: "24px", fontWeight: "700" }}>{stats.totalUsers || 0}</p>
+              </div>
+              <div style={{ padding: "12px", backgroundColor: "#fed7d7", borderRadius: "8px", borderLeft: "4px solid #e53e3e" }}>
+                <p style={{ margin: 0, fontSize: "12px", color: "#742a2a", fontWeight: "600" }}>VICTIMS</p>
+                <p style={{ margin: "8px 0 0 0", fontSize: "24px", fontWeight: "700" }}>{stats.victimCount || 0}</p>
+              </div>
+              <div style={{ padding: "12px", backgroundColor: "#c6f6d5", borderRadius: "8px", borderLeft: "4px solid #22543d" }}>
+                <p style={{ margin: 0, fontSize: "12px", color: "#22543d", fontWeight: "600" }}>COUNSELLORS</p>
+                <p style={{ margin: "8px 0 0 0", fontSize: "24px", fontWeight: "700" }}>{stats.counsellorCount || 0}</p>
+              </div>
+              <div style={{ padding: "12px", backgroundColor: "#bee3f8", borderRadius: "8px", borderLeft: "4px solid #2c5282" }}>
+                <p style={{ margin: 0, fontSize: "12px", color: "#2c5282", fontWeight: "600" }}>LEGAL ADVISORS</p>
+                <p style={{ margin: "8px 0 0 0", fontSize: "24px", fontWeight: "700" }}>{stats.legalAdvisorCount || 0}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="dash-card">
+            <h3>Recent Activity Logs</h3>
+            {activities.length === 0 ? (
+              <p style={{ color: "#718096" }}>No recent activity recorded yet.</p>
+            ) : (
+              activities.map((log) => (
+              <div key={log.id} className="list-item">
+                <span className={`li-dot ${getLogLevel(log.actionType)}`}></span>
+                <div style={{ flex: 1 }}>
+                  <strong>{log.description}</strong>
+                  <small style={{ display: "block", color: "#718096", marginTop: "4px" }}>
+                    {log.actorName} ({log.actorRole}) • {new Date(log.createdAt).toLocaleString()}
+                  </small>
+                  {log.details && (
+                    <small style={{ display: "block", color: "#94a3b8", marginTop: "4px" }}>{log.details}</small>
+                  )}
+                </div>
+              </div>
+            )))}
+          </div>
         </div>
       )}
 
       {activeTab === "users" && (
-        <div>
-          {error && <div className="error-message" style={{ color: '#e53e3e', marginBottom: '16px', padding: '12px', backgroundColor: '#fed7d7', borderRadius: '8px', border: '1px solid #feb2b2' }}>{error}</div>}
-          <div className="dash-card" style={{ marginBottom: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <h3>📚 All Resources</h3>
-              <input placeholder="Search resources..." value={search} onChange={e => setSearch(e.target.value)} style={{ padding: "10px 14px", borderRadius: "8px", border: "2px solid #e2e8f0", fontSize: "14px", width: "220px" }} />
-            </div>
-            {loading ? (
-              <div style={{ textAlign: "center", padding: "20px" }}>Loading resources...</div>
-            ) : (
-              filtered.map(r => (
-                <div key={r.id} className="list-item" style={{ justifyContent: "space-between" }}>
-                  <div>
-                    <strong>{r.name}</strong> — {r.resourceType} — <span style={{ color: "#6c63ff", fontWeight: "600" }}>{r.targetAudience}</span>
+        <div className="dash-card">
+          <div style={{ marginBottom: "16px" }}>
+            <input
+              type="text"
+              placeholder="Search users by name, email, or role..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "2px solid #e2e8f0", fontSize: "14px", fontFamily: "inherit" }}
+            />
+          </div>
+          <h3>All Users ({filteredUsers.length})</h3>
+          {filteredUsers.length === 0 ? (
+            <p style={{ color: "#718096" }}>No users found</p>
+          ) : (
+            filteredUsers.map((userItem) => (
+              <div key={userItem.id} className="list-item" style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1, minWidth: "250px" }}>
+                  <span className={`li-dot ${getRoleColor(userItem.role)}`}></span>
+                  <div style={{ flex: 1 }}>
+                    <strong>{userItem.name}</strong>
                     <br />
-                    <small style={{ color: "#718096" }}>{r.description?.substring(0, 100)}...</small>
-                  </div>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <span style={{ fontSize: "12px", padding: "4px 10px", borderRadius: "20px", background: r.isActive ? "#f0fff4" : "#fff5f5", color: r.isActive ? "#38a169" : "#e53e3e", fontWeight: "700" }}>{r.isActive ? "Active" : "Inactive"}</span>
-                    <button onClick={() => deleteResource(r.id)} style={{ background: "none", border: "none", color: "#e53e3e", cursor: "pointer", fontWeight: "700" }}>✕</button>
+                    <small>{userItem.email}</small>
+                    <br />
+                    <small style={{ color: "#718096", marginTop: "4px" }}>Role: <strong>{userItem.role}</strong></small>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-          <div className="dash-card">
-            <h3>➕ Add New Resource</h3>
-            <form onSubmit={addResource} className="auth-form" style={{ marginTop: "16px" }}>
-              <div className="form-group"><label>Resource Name</label><input type="text" placeholder="Resource title" value={newResource.name} onChange={e => setNewResource({ ...newResource, name: e.target.value })} required disabled={loading} /></div>
-              <div className="form-group"><label>Description</label><textarea placeholder="Detailed description" value={newResource.description} onChange={e => setNewResource({ ...newResource, description: e.target.value })} required disabled={loading} rows="3" /></div>
-              <div className="form-group">
-                <label>Resource Type</label>
-                <select value={newResource.resourceType} onChange={e => setNewResource({ ...newResource, resourceType: e.target.value })} disabled={loading}>
-                  <option value="SafetyTip">Safety Tip</option>
-                  <option value="SupportService">Support Service</option>
-                  <option value="LegalResource">Legal Resource</option>
-                  <option value="CounselingTip">Counseling Tip</option>
-                </select>
+                <button onClick={() => deleteUser(userItem.id)} style={{ background: "none", border: "none", color: "#e53e3e", cursor: "pointer", fontWeight: "700", padding: "4px 8px" }}>
+                  Delete
+                </button>
               </div>
-              <div className="form-group">
-                <label>Target Audience</label>
-                <select value={newResource.targetAudience} onChange={e => setNewResource({ ...newResource, targetAudience: e.target.value })} disabled={loading}>
-                  <option value="Victim">Victim / Survivor</option>
-                  <option value="Counsellor">Counsellor</option>
-                  <option value="LegalAdvisor">Legal Advisor</option>
-                  <option value="Admin">Admin</option>
-                </select>
-              </div>
-              <div className="form-group"><label>Contact Info</label><input type="text" placeholder="Contact information or link" value={newResource.contactInfo} onChange={e => setNewResource({ ...newResource, contactInfo: e.target.value })} disabled={loading} /></div>
-              <div className="form-group"><label>Emergency Hotline</label><input type="text" placeholder="Emergency contact number" value={newResource.emergencyHotline} onChange={e => setNewResource({ ...newResource, emergencyHotline: e.target.value })} disabled={loading} /></div>
-              <div className="form-group"><label>Priority Level (1-10)</label><input type="number" min="1" max="10" value={newResource.priorityLevel} onChange={e => setNewResource({ ...newResource, priorityLevel: parseInt(e.target.value) })} disabled={loading} /></div>
-              <div className="form-group"><label>Image URL</label><input type="url" placeholder="Image URL (optional)" value={newResource.imageUrl} onChange={e => setNewResource({ ...newResource, imageUrl: e.target.value })} disabled={loading} /></div>
-              <button type="submit" className="btn-submit" disabled={loading}>
-                {loading ? "Adding Resource..." : "Add Resource"}
-              </button>
-              {resourceSaved && <p style={{ color: "green", marginTop: "10px", fontWeight: "600" }}>✅ Resource added!</p>}
-            </form>
-          </div>
+            ))
+          )}
         </div>
       )}
 
+      {activeTab === "support" && <AgentSupportChat agent={user} />}
+
       {activeTab === "security" && (
         <div className="dash-card">
-          <h3>🔒 Security Logs</h3>
+          <h3>Security Settings</h3>
           <div style={{ marginTop: "16px" }}>
-            {logs.map((l, i) => (
-              <div key={i} className="list-item">
-                <span className={`li-dot ${l.level === "danger" ? "red" : l.level === "warning" ? "yellow" : "green"}`}></span>
-                <span style={{ color: "#718096", fontSize: "13px", minWidth: "80px" }}>{l.time}</span>
-                <span>{l.event}</span>
-              </div>
-            ))}
+            <div style={{ marginBottom: "16px", padding: "12px", backgroundColor: "#edf2f7", borderRadius: "8px" }}>
+              <h4 style={{ margin: "0 0 8px 0" }}>Two-Factor Authentication</h4>
+              <p style={{ margin: 0, fontSize: "14px", color: "#4a5568" }}>2FA is enabled for all admin accounts</p>
+            </div>
+            <div style={{ marginBottom: "16px", padding: "12px", backgroundColor: "#edf2f7", borderRadius: "8px" }}>
+              <h4 style={{ margin: "0 0 8px 0" }}>SSL/TLS Encryption</h4>
+              <p style={{ margin: 0, fontSize: "14px", color: "#4a5568" }}>All data is encrypted in transit</p>
+            </div>
+            <div style={{ marginBottom: "16px", padding: "12px", backgroundColor: "#edf2f7", borderRadius: "8px" }}>
+              <h4 style={{ margin: "0 0 8px 0" }}>Password Policy</h4>
+              <p style={{ margin: 0, fontSize: "14px", color: "#4a5568" }}>Minimum 6 characters with strong encryption</p>
+            </div>
           </div>
         </div>
       )}
 
       {activeTab === "settings" && (
         <div className="dash-card">
-          <h3>⚙️ Platform Settings</h3>
-          <div className="auth-form" style={{ marginTop: "20px" }}>
-            <div className="form-group"><label>Platform Name</label><input type="text" defaultValue="SafeSupport" /></div>
-            <div className="form-group"><label>Support Email</label><input type="email" defaultValue="support@safesupport.org" /></div>
-            <div className="form-group"><label>Emergency Number</label><input type="text" defaultValue="112" /></div>
-            <div className="form-group">
-              <label>Maintenance Mode</label>
-              <select defaultValue="off"><option value="off">Off</option><option value="on">On</option></select>
+          <h3>Platform Settings</h3>
+          <div style={{ marginTop: "16px" }}>
+            <div style={{ marginBottom: "16px", padding: "12px", backgroundColor: "#edf2f7", borderRadius: "8px" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
+                <input type="checkbox" defaultChecked />
+                <span><strong>Enable Email Notifications</strong></span>
+              </label>
             </div>
-            <button className="btn-submit">Save Settings</button>
           </div>
         </div>
       )}
