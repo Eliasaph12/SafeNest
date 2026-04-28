@@ -25,7 +25,7 @@ class ApiService {
       return response.data;
     } catch (error) {
       if (!error.response) {
-        throw new Error("Cannot connect to backend. Make sure the Spring Boot server is running on http://localhost:8080.");
+        throw new Error(`Cannot connect to backend at ${API_BASE_URL}. Make sure the backend server is running and publicly reachable.`);
       }
       const message = error.response?.data?.error || error.message || 'Request failed';
       throw new Error(message);
